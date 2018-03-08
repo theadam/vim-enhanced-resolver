@@ -8,6 +8,20 @@ function! enhancedresolver#GetCursor() abort
   return l:word
 endfunction
 
+function enhancedresolver#GetWebpackPath() abort
+    if filereadable('webpack.production.config.js')
+        return 'webpack.production.config.js'
+    elseif filereadable('webpack.local.config.js')
+        return 'webpack.local.config.js'
+    else
+        return 'webpack.config.js'
+    endif
+endfunction
+
+function enhancedresolver#GetCommand() abort
+    return (expand('<sfile>:p:h:h') . '/node_modules/.bin/enhancedresolve')
+endfunction
+
 " Get path to resolved module under cursor
 "
 " @return {String} path
@@ -15,10 +29,12 @@ function! enhancedresolver#Resolve() abort
   let l:request = enhancedresolver#GetCursor()
   let l:basepath = expand('%:p:h')
   let l:basepath = empty(l:basepath) ? getcwd() : l:basepath
+  let l:webpackpath = enhancedresolver#GetWebpackPath()
   let l:result = substitute(system(join([
-        \   'enhancedresolve',
+        \   enhancedresolver#GetCommand(),
         \   '--suppress',
         \   '--basepath', l:basepath,
+        \   '--webpackConfig', l:webpackpath,
         \   l:request,
         \ ], ' ')), '\n', '', 'g')
   return l:result
